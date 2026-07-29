@@ -1,0 +1,9 @@
+.build/
+Packages/
+xcuserdata/
+*.xcodeproj
+*.xcworkspace
+
+.env
+
+.DS_Store
