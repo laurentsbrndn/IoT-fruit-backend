@@ -1,8 +1,12 @@
 import Vapor
+import MQTTNIO
+import NIOCore
+import NIOPosix
 
 final class MQTTManager {
     let app: Application
     let subscriber: MQTTSubscriber
+    var client: MQTTClient?
     
     init(app: Application) {
         self.app = app
@@ -12,22 +16,54 @@ final class MQTTManager {
     func start() throws {
         app.logger.info("Mencoba terhubung ke MQTT Broker...")
         
-        /* 
-         CONTOH IMPLEMENTASI KONEKSI (Jika menggunakan library seperti mqtt-nio):
-         let client = MQTTClient(...)
-         client.connect()
-         
-         client.subscribe(to: MQTTTopics.telemetry)
-         
-         client.onMessage { message in
-             // Teruskan pesan yang masuk ke Subscriber kita
-             self.subscriber.handleIncomingMessage(
-                topic: message.topic, 
-                payload: message.payload
-             )
-         }
-         */
+        let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         
-        app.logger.info("MQTT Listener disiapkan untuk topik: \(MQTTTopics.telemetry)")
+        let configuration = MQTTConfiguration(
+            target: .host("broker.hivemq.com", port: 1883),
+            clientId: "VaporBackend_" + UUID().uuidString.prefix(6),
+            keepAliveInterval: .seconds(60) 
+        )
+        
+        let mqttClient = MQTTClient(
+            configuration: configuration,
+            eventLoopGroup: eventLoopGroup
+        )
+        self.client = mqttClient
+        
+        Task {
+            do {
+                try await mqttClient.connect()
+                app.logger.info("✅ Berhasil terhubung ke MQTT Broker!")
+                
+                let subscription = MQTTSubscription(topicFilter: MQTTTopics.telemetry, qos: .atLeastOnce)
+                let subscribeResult = try await mqttClient.subscribe(to: [subscription])
+                app.logger.info("📡 Berhasil Subscribe ke topik: \(MQTTTopics.telemetry) (Result: \(String(describing: subscribeResult)))")
+                
+                for await message in mqttClient.messages {
+                    let topic = message.topic
+                    
+                    let data: Data
+                    switch message.payload {
+                    case .empty:
+                        data = Data()
+                    case .bytes(var buffer):
+                        data = buffer.readData(length: buffer.readableBytes) ?? Data()
+                    case .string(let string, _):
+                        data = Data(string.utf8)
+                    }
+                    
+                    self.subscriber.handleIncomingMessage(topic: topic, payload: data)
+                }
+                
+            } catch {
+                app.logger.error("❌ Gagal koneksi/subscribe ke MQTT Broker: \(error)")
+            }
+        }
+    }
+    
+    func stop() {
+        Task {
+            try? await client?.disconnect()
+        }
     }
 }
