@@ -12,9 +12,8 @@ public func config(_ app: Application) async throws {
     ), as: .psql)
     
     app.migrations.add(CreateDatabaseSchema())
-    app.migrations.add(SeedDataMigration())
     
-    // berguna buat otomatis membuat tabel di database saat pertama kali menjalankan aplikasi.
+    // berguna buat otomatis membuat tabel di database saat pertama kali kita menjalankan aplikasi.
     // try await app.autoMigrate()
     
     let mqttManager = MQTTManager(app: app)

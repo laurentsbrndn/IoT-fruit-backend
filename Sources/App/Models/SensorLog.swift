@@ -1,14 +1,14 @@
 import Fluent
 import Vapor
 
-final class SensorLog: Model, Content {
+final class SensorLog: Model, Content, @unchecked Sendable {
     static let schema = "sensor_logs"
     
     @ID(key: .id)
     var id: UUID?
     
-    @Parent(key: "truck_id")
-    var truck: Truck
+    @Field(key: "device_id")
+    var deviceId: String
     
     @Field(key: "temperature")
     var temperature: Double
@@ -22,8 +22,8 @@ final class SensorLog: Model, Content {
     @Field(key: "longitude")
     var longitude: Double
     
-    @Field(key: "battery")
-    var battery: Int
+    @OptionalField(key: "battery")
+    var battery: Int?
     
     @Field(key: "timestamp")
     var timestamp: Date
@@ -33,9 +33,9 @@ final class SensorLog: Model, Content {
     
     init() { }
     
-    init(id: UUID? = nil, truckID: Truck.IDValue, temperature: Double, humidity: Double, latitude: Double, longitude: Double, battery: Int, timestamp: Date) {
+    init(id: UUID? = nil, deviceId: String, temperature: Double, humidity: Double, latitude: Double, longitude: Double, battery: Int, timestamp: Date) {
         self.id = id
-        self.$truck.id = truckID
+        self.deviceId = deviceId
         self.temperature = temperature
         self.humidity = humidity
         self.latitude = latitude

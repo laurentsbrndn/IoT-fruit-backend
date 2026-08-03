@@ -8,9 +8,9 @@ struct SensorRepository {
         try await log.save(on: database)
     }
     
-    func getLatestLog(for truckID: UUID) async throws -> SensorLog? {
+    func getLatestLog(for deviceId: String) async throws -> SensorLog? {
         try await SensorLog.query(on: database)
-            .filter(\.$truck.$id == truckID)
+            .filter(\.$deviceId == deviceId)
             .sort(\.$timestamp, .descending)
             .first()
     }

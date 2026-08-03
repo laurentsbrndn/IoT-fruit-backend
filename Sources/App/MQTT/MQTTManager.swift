@@ -26,7 +26,7 @@ final class MQTTManager {
         
         let mqttClient = MQTTClient(
             configuration: configuration,
-            eventLoopGroup: eventLoopGroup
+            eventLoopGroup: app.eventLoopGroup
         )
         self.client = mqttClient
         

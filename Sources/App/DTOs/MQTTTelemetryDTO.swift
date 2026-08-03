@@ -7,6 +7,5 @@ struct MQTTTelemetryDTO: Content {
     let humidity: Double
     let latitude: Double
     let longitude: Double
-    let battery: Int
-    let status: String
+    let battery: Int?
 }
