@@ -33,7 +33,7 @@ final class SensorLog: Model, Content, @unchecked Sendable {
     
     init() { }
     
-    init(id: UUID? = nil, deviceId: String, temperature: Double, humidity: Double, latitude: Double, longitude: Double, battery: Int, timestamp: Date) {
+    init(id: UUID? = nil, deviceId: String, temperature: Double, humidity: Double, latitude: Double, longitude: Double, battery: Int?, timestamp: Date) {
         self.id = id
         self.deviceId = deviceId
         self.temperature = temperature
