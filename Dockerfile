@@ -1,4 +1,4 @@
-dockerfile_content = """# ================================
+# ================================
 # Build stage
 # ================================
 FROM swift:5.9-jammy as build
@@ -55,9 +55,3 @@ EXPOSE 8080
 # Jalankan aplikasi Vapor dan pastikan binding ke 0.0.0.0 agar bisa diakses internet
 ENTRYPOINT ["./App"]
 CMD ["serve", "--env", "production", "--hostname", "0.0.0.0", "--port", "8080"]
-"""
-
-with open("Dockerfile", "w") as f:
-    f.write(dockerfile_content)
-
-print("File generated")
