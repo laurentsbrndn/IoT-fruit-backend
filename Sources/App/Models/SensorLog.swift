@@ -4,43 +4,40 @@ import Vapor
 final class SensorLog: Model, Content, @unchecked Sendable {
     static let schema = "sensor_logs"
     
-    @ID(key: .id)
+    @ID(custom: "sensor_log_id", generatedBy: .random)
     var id: UUID?
     
-    @Field(key: "device_id")
-    var deviceId: String
+    @Parent(key: "shipment_id")
+    var shipment: Shipment
     
-    @Field(key: "temperature")
-    var temperature: Double
+    @OptionalField(key: "sensor_log_temperature")
+    var temperature: Double?
     
-    @Field(key: "humidity")
-    var humidity: Double
+    @OptionalField(key: "sensor_log_humidity")
+    var humidity: Double?
     
-    @Field(key: "latitude")
-    var latitude: Double
+    @OptionalField(key: "sensor_log_latitude")
+    var latitude: Double?
     
-    @Field(key: "longitude")
-    var longitude: Double
+    @OptionalField(key: "sensor_log_longitude")
+    var longitude: Double?
     
-    @OptionalField(key: "battery")
-    var battery: Int?
+    @OptionalField(key: "sensor_log_battery_percentage")
+    var batteryPercentage: Double?
     
-    @Field(key: "timestamp")
-    var timestamp: Date
-    
-    @Timestamp(key: "created_at", on: .create)
-    var createdAt: Date?
+    @OptionalField(key: "sensor_log_timestamps")
+    var timestamps: Date?
     
     init() { }
     
-    init(id: UUID? = nil, deviceId: String, temperature: Double, humidity: Double, latitude: Double, longitude: Double, battery: Int?, timestamp: Date) {
+    init(id: UUID? = nil, shipmentID: UUID, temperature: Double? = nil, humidity: Double? = nil, latitude: Double? = nil, longitude: Double? = nil, batteryPercentage: Double? = nil, timestamps: Date? = nil) {
         self.id = id
-        self.deviceId = deviceId
+        self.$shipment.id = shipmentID
         self.temperature = temperature
         self.humidity = humidity
         self.latitude = latitude
         self.longitude = longitude
-        self.battery = battery
-        self.timestamp = timestamp
+        self.batteryPercentage = batteryPercentage
+        self.timestamps = timestamps
     }
 }

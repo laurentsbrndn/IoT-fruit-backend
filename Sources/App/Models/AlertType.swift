@@ -1,0 +1,27 @@
+import Fluent
+import Vapor
+
+final class AlertType: Model, Content, @unchecked Sendable {
+    static let schema = "alert_types"
+    
+    @ID(custom: "alert_type_id", generatedBy: .random)
+    var id: UUID?
+    
+    @Field(key: "alert_types_title")
+    var title: String
+    
+    @Field(key: "alert_types_severity")
+    var severity: String
+    
+    @OptionalField(key: "alert_types_description")
+    var description: String?
+    
+    init() { }
+    
+    init(id: UUID? = nil, title: String, severity: String, description: String? = nil) {
+        self.id = id
+        self.title = title
+        self.severity = severity
+        self.description = description
+    }
+}

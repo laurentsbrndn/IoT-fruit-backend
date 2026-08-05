@@ -10,10 +10,8 @@ struct SensorController: RouteCollection {
     }
 
     func getAllLogsHandler(_ req: Request) async throws -> [SensorLog] {
-        try await SensorLog.query(on: req.db)
-            .sort(\.$timestamp, .descending)
-            .limit(100)
-            .all()
+        let repository = SensorRepository(database: req.db)
+        return try await repository.getAllLogs()
     }
 
     func getDeviceLogsHandler(_ req: Request) async throws -> [SensorLog] {
@@ -21,10 +19,7 @@ struct SensorController: RouteCollection {
             throw Abort(.badRequest, reason: "Parameter Device ID tidak valid")
         }
         
-        return try await SensorLog.query(on: req.db)
-            .filter(\.$deviceId == deviceID)
-            .sort(\.$timestamp, .descending)
-            .limit(50) 
-            .all()
+        let repository = SensorRepository(database: req.db)
+        return try await repository.getLogs(for: deviceID)
     }
 }
