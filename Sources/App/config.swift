@@ -30,7 +30,7 @@ import FluentPostgresDriver
 public func config(_ app: Application) async throws {
     
     guard let databaseURL = Environment.get("DATABASE_URL") else {
-        fatalError("🚨 DATABASE_URL tidak ditemukan di file .env")
+        fatalError("DATABASE_URL not found in .env")
     }
     
     try app.databases.use(.postgres(url: databaseURL), as: .psql)

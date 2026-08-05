@@ -7,13 +7,13 @@ final class AlertType: Model, Content, @unchecked Sendable {
     @ID(custom: "alert_type_id", generatedBy: .random)
     var id: UUID?
     
-    @Field(key: "alert_types_title")
+    @Field(key: "alert_type_title")
     var title: String
     
-    @Field(key: "alert_types_severity")
+    @Field(key: "alert_type_severity")
     var severity: String
     
-    @OptionalField(key: "alert_types_description")
+    @OptionalField(key: "alert_type_description")
     var description: String?
     
     init() { }

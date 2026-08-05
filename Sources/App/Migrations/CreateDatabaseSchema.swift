@@ -15,9 +15,9 @@ struct CreateDatabaseSchema: AsyncMigration {
             
         try await database.schema("alert_types")
             .field("alert_type_id", .uuid, .identifier(auto: false))
-            .field("alert_types_title", .string, .required)
-            .field("alert_types_severity", .string, .required)
-            .field("alert_types_description", .string)
+            .field("alert_type_title", .string, .required)
+            .field("alert_type_severity", .string, .required)
+            .field("alert_type_description", .string)
             .create()
             
         try await database.schema("shipments")

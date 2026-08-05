@@ -6,7 +6,7 @@ struct AlertLogRepository {
     
     func getAllAlerts() async throws -> [AlertLog] {
         try await AlertLog.query(on: database)
-            .with(\.$alertType) // Menarik detail dari tabel alert_types
+            .with(\.$alertType)
             .sort(\.$timestamps, .descending)
             .all()
     }

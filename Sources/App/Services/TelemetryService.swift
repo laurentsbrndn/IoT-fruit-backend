@@ -6,7 +6,7 @@ struct TelemetryService {
     
     func processIncomingData(_ dto: MQTTTelemetryDTO) async throws {
         let db = app.db
-
+        
         guard let deviceUUID = UUID(uuidString: dto.deviceId) else {
             app.logger.error("Format device_id tidak valid dari telemetri: \(dto.deviceId)")
             return
@@ -34,9 +34,42 @@ struct TelemetryService {
         )
         
         try await sensorLog.save(on: db)
+        let currentSensorLogID = try sensorLog.requireID()
+        
+        if let temp = dto.temperature, temp > 30.0 {
+            if let alertType = try await AlertType.query(on: db)
+                .filter(\.$title == "Suhu Terlalu Panas")
+                .first() {
+                
+                let alertLog = AlertLog(
+                    alertTypeID: try alertType.requireID(),
+                    shipmentID: currentShipmentID,
+                    sensorLogID: currentSensorLogID,
+                    timestamps: Date()
+                )
+                try await alertLog.save(on: db)
+                app.logger.warning("⚠️ ALERT TER-TRIGGER: Suhu mencapai \(temp)°C")
+            }
+        }
+        
+        if let battery = dto.batteryPercentage, battery < 15.0 {
+            if let alertType = try await AlertType.query(on: db)
+                .filter(\.$title == "Baterai Lemah")
+                .first() {
+                
+                let alertLog = AlertLog(
+                    alertTypeID: try alertType.requireID(),
+                    shipmentID: currentShipmentID,
+                    sensorLogID: currentSensorLogID,
+                    timestamps: Date()
+                )
+                try await alertLog.save(on: db)
+                app.logger.warning("⚠️ ALERT TER-TRIGGER: Baterai tersisa \(battery)%")
+            }
+        }
         
         await WebSocketManager.shared.broadcast(telemetry: dto)
         
-        app.logger.info("Berhasil menyimpan telemetri untuk Device: \(dto.deviceId) ke Shipment: \(currentShipmentID).")
+        app.logger.info("Berhasil menyimpan telemetri untuk Device: \(dto.deviceId).")
     }
 }

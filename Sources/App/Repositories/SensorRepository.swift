@@ -14,12 +14,18 @@ struct SensorRepository {
         return try await SensorLog.query(on: database)
             .join(Shipment.self, on: \SensorLog.$shipment.$id == \Shipment.$id)
             .filter(Shipment.self, \.$device.$id == deviceUUID)
+            .with(\.$shipment) { shipment in
+                shipment.with(\.$device)
+            }
             .sort(\SensorLog.$timestamps, .descending)
             .first()
     }
     
     func getAllLogs(limit: Int = 100) async throws -> [SensorLog] {
         try await SensorLog.query(on: database)
+            .with(\.$shipment) { shipment in
+                shipment.with(\.$device)
+            }
             .sort(\SensorLog.$timestamps, .descending)
             .limit(limit)
             .all()
@@ -31,6 +37,9 @@ struct SensorRepository {
         return try await SensorLog.query(on: database)
             .join(Shipment.self, on: \SensorLog.$shipment.$id == \Shipment.$id)
             .filter(Shipment.self, \.$device.$id == deviceUUID)
+            .with(\.$shipment) { shipment in
+                shipment.with(\.$device)
+            }
             .sort(\SensorLog.$timestamps, .descending)
             .limit(limit)
             .all()

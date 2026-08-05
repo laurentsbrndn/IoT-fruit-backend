@@ -8,7 +8,9 @@ struct DeviceRepository {
         try await Device.query(on: database).all()
     }
     
-    func getDevice(by id: UUID) async throws -> Device? {
-        try await Device.find(id, on: database)
+    func getDevice(byName name: String) async throws -> Device? {
+        try await Device.query(on: database)
+            .filter(\.$deviceName == name)
+            .first()
     }
 }

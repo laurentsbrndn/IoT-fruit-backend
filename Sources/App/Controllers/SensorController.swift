@@ -6,7 +6,7 @@ struct SensorController: RouteCollection {
         let sensorsRoute = routes.grouped("api", "sensors")
         
         sensorsRoute.get(use: getAllLogsHandler)
-        sensorsRoute.get(":deviceID", use: getDeviceLogsHandler)
+        sensorsRoute.get("device", ":deviceID", use: getDeviceLogsHandler) 
     }
 
     func getAllLogsHandler(_ req: Request) async throws -> [SensorLog] {

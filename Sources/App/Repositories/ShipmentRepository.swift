@@ -32,4 +32,8 @@ struct ShipmentRepository {
     func create(_ shipment: Shipment) async throws {
         try await shipment.save(on: database)
     }
+    
+    func update(_ shipment: Shipment) async throws {
+        try await shipment.update(on: database)
+    }
 }
