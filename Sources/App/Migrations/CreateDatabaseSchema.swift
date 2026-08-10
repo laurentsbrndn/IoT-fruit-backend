@@ -1,7 +1,13 @@
 import Fluent
+import SQLKit // Wajib di-import untuk mengeksekusi raw SQL
 
 struct CreateDatabaseSchema: AsyncMigration {
     func prepare(on database: Database) async throws {
+        
+        if let sql = database as? SQLDatabase {
+            try await sql.raw("CREATE EXTENSION IF NOT EXISTS timescaledb;").run()
+        }
+        
         try await database.schema("devices")
             .field("device_id", .uuid, .identifier(auto: false))
             .field("device_name", .string, .required)
@@ -41,16 +47,26 @@ struct CreateDatabaseSchema: AsyncMigration {
             .field("sensor_log_latitude", .double)
             .field("sensor_log_longitude", .double)
             .field("sensor_log_battery_percentage", .double)
-            .field("sensor_log_timestamps", .datetime)
+            .field("sensor_log_timestamps", .datetime, .required)
             .create()
             
         try await database.schema("alert_logs")
             .field("alert_log_id", .uuid, .identifier(auto: false))
             .field("alert_type_id", .uuid, .required, .references("alert_types", "alert_type_id"))
             .field("shipment_id", .uuid, .required, .references("shipments", "shipment_id"))
-            .field("sensor_log_id", .uuid, .required, .references("sensor_logs", "sensor_log_id"))
+            .field("sensor_log_id", .uuid, .required) 
             .field("timestamps", .datetime, .required)
             .create()
+            
+        if let sql = database as? SQLDatabase {
+            try await sql.raw("ALTER TABLE sensor_logs DROP CONSTRAINT sensor_logs_pkey CASCADE;").run()
+            try await sql.raw("ALTER TABLE sensor_logs ADD PRIMARY KEY (sensor_log_id, sensor_log_timestamps);").run()
+            try await sql.raw("SELECT create_hypertable('sensor_logs', 'sensor_log_timestamps');").run()
+            
+            try await sql.raw("ALTER TABLE alert_logs DROP CONSTRAINT alert_logs_pkey CASCADE;").run()
+            try await sql.raw("ALTER TABLE alert_logs ADD PRIMARY KEY (alert_log_id, timestamps);").run()
+            try await sql.raw("SELECT create_hypertable('alert_logs', 'timestamps');").run()
+        }
     }
 
     func revert(on database: Database) async throws {
