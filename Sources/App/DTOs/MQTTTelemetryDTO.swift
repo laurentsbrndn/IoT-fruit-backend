@@ -5,8 +5,10 @@ struct MQTTTelemetryDTO: Content {
     let timestamps: Date?
     let temperature: Double?
     let humidity: Double?
-    let latitude: Double?
-    let longitude: Double?
+    
+    let latitude: [Double]?
+    let longitude: [Double]?
+    
     let batteryPercentage: Double?
     
     enum CodingKeys: String, CodingKey {

@@ -23,6 +23,7 @@ struct CreateDatabaseSchema: AsyncMigration {
             .field("alert_type_id", .uuid, .identifier(auto: false))
             .field("alert_type_title", .string, .required)
             .field("alert_type_severity", .string, .required)
+            .field("alert_type_category", .string, .required)
             .field("alert_type_description", .string)
             .create()
             
@@ -44,8 +45,8 @@ struct CreateDatabaseSchema: AsyncMigration {
             .field("shipment_id", .uuid, .required, .references("shipments", "shipment_id"))
             .field("sensor_log_temperature", .double)
             .field("sensor_log_humidity", .double)
-            .field("sensor_log_latitude", .double)
-            .field("sensor_log_longitude", .double)
+            .field("sensor_log_latitude", .array(of: .double))
+            .field("sensor_log_longitude", .array(of: .double))
             .field("sensor_log_battery_percentage", .double)
             .field("sensor_log_timestamps", .datetime, .required)
             .create()

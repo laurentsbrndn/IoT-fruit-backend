@@ -10,6 +10,8 @@ struct ShipmentController: RouteCollection {
         shipmentsRoute.get(":shipmentID", use: getShipmentHandler)
 
         shipmentsRoute.post(use: startShipmentHandler)
+
+        shipmentsRoute.put(":shipmentID", use: updateShipmentHandler)
         
         shipmentsRoute.patch(":shipmentID", "finish", use: finishShipmentHandler)
     }
@@ -80,6 +82,40 @@ struct ShipmentController: RouteCollection {
         }
         
         shipment.endDate = Date()
+        shipment.endLatitude = dto.endLatitude
+        shipment.endLongitude = dto.endLongitude
+        
+        try await repository.update(shipment)
+        
+        return .ok
+    }
+
+    func updateShipmentHandler(_ req: Request) async throws -> HTTPStatus {
+        guard let shipmentIDString = req.parameters.get("shipmentID"),
+              let shipmentID = UUID(uuidString: shipmentIDString) else {
+            throw Abort(.badRequest, reason: "Format Shipment ID tidak valid.")
+        }
+        
+        let dto = try req.content.decode(UpdateShipmentDTO.self)
+        
+        guard let deviceUUID = UUID(uuidString: dto.deviceId),
+              let driverUUID = UUID(uuidString: dto.driverId) else {
+            throw Abort(.badRequest, reason: "Format Device ID atau Driver ID tidak valid.")
+        }
+        
+        let repository = ShipmentRepository(database: req.db)
+        
+        guard let shipment = try await repository.getShipment(by: shipmentID) else {
+            throw Abort(.notFound, reason: "Data pengiriman (Shipment) tidak ditemukan.")
+        }
+        
+        shipment.$device.id = deviceUUID
+        shipment.$driver.id = driverUUID
+        shipment.truckPlateNumber = dto.truckPlateNumber
+        shipment.startDate = dto.startDate
+        shipment.endDate = dto.endDate
+        shipment.startLatitude = dto.startLatitude
+        shipment.startLongitude = dto.startLongitude
         shipment.endLatitude = dto.endLatitude
         shipment.endLongitude = dto.endLongitude
         
