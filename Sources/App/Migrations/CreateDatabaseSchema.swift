@@ -1,5 +1,5 @@
 import Fluent
-import SQLKit // Wajib di-import untuk mengeksekusi raw SQL
+import SQLKit
 
 struct CreateDatabaseSchema: AsyncMigration {
     func prepare(on database: Database) async throws {
@@ -47,7 +47,6 @@ struct CreateDatabaseSchema: AsyncMigration {
             .field("sensor_log_humidity", .double)
             .field("sensor_log_latitude", .array(of: .double))
             .field("sensor_log_longitude", .array(of: .double))
-            .field("sensor_log_battery_percentage", .double)
             .field("sensor_log_timestamps", .datetime, .required)
             .create()
             

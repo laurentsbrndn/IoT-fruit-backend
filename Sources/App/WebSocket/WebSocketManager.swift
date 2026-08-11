@@ -19,7 +19,7 @@ actor WebSocketManager {
         print("❌ Klien WebSocket Terputus: \(id)")
     }
     
-    func broadcast(telemetry: MQTTTelemetryDTO) {
+    func broadcast(telemetry: MQTTBatchedTelemetryDTO) {
         guard let data = try? JSONEncoder().encode(telemetry),
               let jsonString = String(data: data, encoding: .utf8) else { return }
         
