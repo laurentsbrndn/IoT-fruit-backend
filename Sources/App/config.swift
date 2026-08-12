@@ -40,6 +40,7 @@ public func config(_ app: Application) async throws {
     try await app.autoMigrate()
     
     let mqttManager = MQTTManager(app: app)
+    app.mqttManager = mqttManager
     try mqttManager.start()
 
     try routes(app)
