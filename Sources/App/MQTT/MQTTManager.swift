@@ -28,6 +28,29 @@ final class MQTTManager {
         )
         self.client = mqttClient
         
+        // Launch message stream listener in a dedicated background Task
+        Task {
+            app.logger.info("👂 Mulai mendengarkan stream MQTT message...")
+            for await message in mqttClient.messages {
+                app.logger.info("🚨 MQTT MESSAGE MASUK!")
+                app.logger.info("Topic: \(message.topic)")
+                let topic = message.topic
+                
+                let data: Data
+                switch message.payload {
+                case .empty:
+                    data = Data()
+                case .bytes(var buffer):
+                    data = buffer.readData(length: buffer.readableBytes) ?? Data()
+                case .string(let string, _):
+                    data = Data(string.utf8)
+                }
+                
+                self.subscriber.handleIncomingMessage(topic: topic, payload: data)
+            }
+        }
+        
+        // Connection and Subscription Maintenance Task
         Task {
             while !Task.isCancelled {
                 do {
@@ -47,28 +70,13 @@ final class MQTTManager {
                     app.logger.info("✅ BERHASIL SUBSCRIBE")
                     app.logger.info("📡 Topic: \(MQTTTopics.telemetry)")
                     app.logger.info("📡 Result: \(String(describing: subscribeResult))")
-
-                    app.logger.info("👂 Mulai menunggu MQTT message...")
                     
-                    for await message in mqttClient.messages {
-                        app.logger.info("🚨 MQTT MESSAGE MASUK!")
-                        app.logger.info("Topic: \(message.topic)")
-                        let topic = message.topic
-                        
-                        let data: Data
-                        switch message.payload {
-                        case .empty:
-                            data = Data()
-                        case .bytes(var buffer):
-                            data = buffer.readData(length: buffer.readableBytes) ?? Data()
-                        case .string(let string, _):
-                            data = Data(string.utf8)
-                        }
-                        
-                        self.subscriber.handleIncomingMessage(topic: topic, payload: data)
+                    // Keep task active while client is connected
+                    while mqttClient.isConnected {
+                        try await Task.sleep(nanoseconds: 2_000_000_000)
                     }
                     
-                    app.logger.warning("⚠️ Loop MQTT messages terputus, mencoba auto-reconnect dalam 5 detik...")
+                    app.logger.warning("⚠️ Koneksi MQTT terputus, mencoba reconnect dalam 5 detik...")
                     
                 } catch {
                     app.logger.error("❌ Gagal koneksi/subscribe ke MQTT Broker: \(error). Reconnect dalam 5 detik...")
