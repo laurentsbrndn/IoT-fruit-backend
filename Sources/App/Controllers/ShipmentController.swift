@@ -90,7 +90,7 @@ struct ShipmentController: RouteCollection {
         return .ok
     }
 
-    func updateShipmentHandler(_ req: Request) async throws -> HTTPStatus {
+    func updateShipmentHandler(_ req: Request) async throws -> Shipment {
         guard let shipmentIDString = req.parameters.get("shipmentID"),
               let shipmentID = UUID(uuidString: shipmentIDString) else {
             throw Abort(.badRequest, reason: "Format Shipment ID tidak valid.")
@@ -121,6 +121,6 @@ struct ShipmentController: RouteCollection {
         
         try await repository.update(shipment)
         
-        return .ok
+        return shipment
     }
 }
