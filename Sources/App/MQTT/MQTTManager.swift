@@ -33,13 +33,28 @@ final class MQTTManager {
         Task {
             do {
                 try await mqttClient.connect()
+
                 app.logger.info("✅ Berhasil terhubung ke MQTT Broker!")
-                
-                let subscription = MQTTSubscription(topicFilter: MQTTTopics.telemetry, qos: .atLeastOnce)
+
+                app.logger.info("🔄 Mencoba subscribe ke topic: \(MQTTTopics.telemetry)")
+
+                let subscription = MQTTSubscription(
+                    topicFilter: MQTTTopics.telemetry,
+                    qos: .atLeastOnce
+                )
+
                 let subscribeResult = try await mqttClient.subscribe(to: [subscription])
-                app.logger.info("📡 Berhasil Subscribe ke topik: \(MQTTTopics.telemetry) (Result: \(String(describing: subscribeResult)))")
+
+                app.logger.info("✅ BERHASIL SUBSCRIBE")
+                app.logger.info("📡 Topic: \(MQTTTopics.telemetry)")
+                app.logger.info("📡 Result: \(String(describing: subscribeResult))")
+
+                app.logger.info("👂 Mulai menunggu MQTT message...")
                 
                 for await message in mqttClient.messages {
+
+                    app.logger.info("🚨 MQTT MESSAGE MASUK!")
+                    app.logger.info("Topic: \(message.topic)")
                     let topic = message.topic
                     
                     let data: Data
