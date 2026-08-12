@@ -14,7 +14,7 @@ final class MQTTManager {
     }
     
     func start() throws {
-        app.logger.info("Mencoba terhubung ke MQTT Broker...")
+        app.logger.notice("Mencoba terhubung ke MQTT Broker...")
         
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         
@@ -34,9 +34,9 @@ final class MQTTManager {
             do {
                 try await mqttClient.connect()
 
-                app.logger.info("✅ Berhasil terhubung ke MQTT Broker!")
+                app.logger.notice("✅ Berhasil terhubung ke MQTT Broker!")
 
-                app.logger.info("🔄 Mencoba subscribe ke topic: \(MQTTTopics.telemetry)")
+                app.logger.notice("🔄 Mencoba subscribe ke topic: \(MQTTTopics.telemetry)")
 
                 let subscription = MQTTSubscription(
                     topicFilter: MQTTTopics.telemetry,
@@ -45,16 +45,16 @@ final class MQTTManager {
 
                 let subscribeResult = try await mqttClient.subscribe(to: [subscription])
 
-                app.logger.info("✅ BERHASIL SUBSCRIBE")
-                app.logger.info("📡 Topic: \(MQTTTopics.telemetry)")
-                app.logger.info("📡 Result: \(String(describing: subscribeResult))")
+                app.logger.notice("✅ BERHASIL SUBSCRIBE")
+                app.logger.notice("📡 Topic: \(MQTTTopics.telemetry)")
+                app.logger.notice("📡 Result: \(String(describing: subscribeResult))")
 
-                app.logger.info("👂 Mulai menunggu MQTT message...")
+                app.logger.notice("👂 Mulai menunggu MQTT message...")
                 
                 for await message in mqttClient.messages {
 
-                    app.logger.info("🚨 MQTT MESSAGE MASUK!")
-                    app.logger.info("Topic: \(message.topic)")
+                    app.logger.notice("🚨 MQTT MESSAGE MASUK!")
+                    app.logger.notice("Topic: \(message.topic)")
                     let topic = message.topic
                     
                     let data: Data
