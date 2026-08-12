@@ -1,33 +1,33 @@
-import Vapor
 import MQTTNIO
 import NIOCore
 import NIOPosix
+import Vapor
 
 final class MQTTManager {
     let app: Application
     let subscriber: MQTTSubscriber
     var client: MQTTClient?
-    
+
     init(app: Application) {
         self.app = app
         self.subscriber = MQTTSubscriber(app: app)
     }
-    
+
     func start() throws {
         app.logger.notice("Mencoba terhubung ke MQTT Broker...")
-        
+
         let configuration = MQTTConfiguration(
-            target: .host("broker.hivemq.com", port: 1883),
+            target: .host("test.mosquitto.org", port: 1883),
             clientId: "VaporBackend_" + UUID().uuidString.prefix(6),
-            keepAliveInterval: .seconds(60) 
+            keepAliveInterval: .seconds(60)
         )
-        
+
         let mqttClient = MQTTClient(
             configuration: configuration,
             eventLoopGroup: app.eventLoopGroup
         )
         self.client = mqttClient
-        
+
         // Launch message stream listener in a dedicated background Task
         Task {
             app.logger.info("👂 Mulai mendengarkan stream MQTT message...")
@@ -35,7 +35,7 @@ final class MQTTManager {
                 app.logger.info("🚨 MQTT MESSAGE MASUK!")
                 app.logger.info("Topic: \(message.topic)")
                 let topic = message.topic
-                
+
                 let data: Data
                 switch message.payload {
                 case .empty:
@@ -45,11 +45,11 @@ final class MQTTManager {
                 case .string(let string, _):
                     data = Data(string.utf8)
                 }
-                
+
                 self.subscriber.handleIncomingMessage(topic: topic, payload: data)
             }
         }
-        
+
         // Connection and Subscription Maintenance Task
         Task {
             while !Task.isCancelled {
@@ -70,23 +70,26 @@ final class MQTTManager {
                     app.logger.info("✅ BERHASIL SUBSCRIBE")
                     app.logger.info("📡 Topic: \(MQTTTopics.telemetry)")
                     app.logger.info("📡 Result: \(String(describing: subscribeResult))")
-                    
+
                     // Keep task active while client is connected
                     while mqttClient.isConnected {
                         try await Task.sleep(nanoseconds: 2_000_000_000)
                     }
-                    
-                    app.logger.warning("⚠️ Koneksi MQTT terputus, mencoba reconnect dalam 5 detik...")
-                    
+
+                    app.logger.warning(
+                        "⚠️ Koneksi MQTT terputus, mencoba reconnect dalam 5 detik...")
+
                 } catch {
-                    app.logger.error("❌ Gagal koneksi/subscribe ke MQTT Broker: \(error). Reconnect dalam 5 detik...")
+                    app.logger.error(
+                        "❌ Gagal koneksi/subscribe ke MQTT Broker: \(error). Reconnect dalam 5 detik..."
+                    )
                 }
-                
+
                 try? await Task.sleep(nanoseconds: 5_000_000_000)
             }
         }
     }
-    
+
     func stop() {
         Task {
             try? await client?.disconnect()
