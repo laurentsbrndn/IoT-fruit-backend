@@ -31,47 +31,52 @@ final class MQTTManager {
         self.client = mqttClient
         
         Task {
-            do {
-                try await mqttClient.connect()
+            while !Task.isCancelled {
+                do {
+                    app.logger.info("Mencoba terhubung ke MQTT Broker...")
+                    try await mqttClient.connect()
 
-                app.logger.info("✅ Berhasil terhubung ke MQTT Broker!")
+                    app.logger.info("✅ Berhasil terhubung ke MQTT Broker!")
+                    app.logger.info("🔄 Mencoba subscribe ke topic: \(MQTTTopics.telemetry)")
 
-                app.logger.info("🔄 Mencoba subscribe ke topic: \(MQTTTopics.telemetry)")
+                    let subscription = MQTTSubscription(
+                        topicFilter: MQTTTopics.telemetry,
+                        qos: .atLeastOnce
+                    )
 
-                let subscription = MQTTSubscription(
-                    topicFilter: MQTTTopics.telemetry,
-                    qos: .atLeastOnce
-                )
+                    let subscribeResult = try await mqttClient.subscribe(to: [subscription])
 
-                let subscribeResult = try await mqttClient.subscribe(to: [subscription])
+                    app.logger.info("✅ BERHASIL SUBSCRIBE")
+                    app.logger.info("📡 Topic: \(MQTTTopics.telemetry)")
+                    app.logger.info("📡 Result: \(String(describing: subscribeResult))")
 
-                app.logger.info("✅ BERHASIL SUBSCRIBE")
-                app.logger.info("📡 Topic: \(MQTTTopics.telemetry)")
-                app.logger.info("📡 Result: \(String(describing: subscribeResult))")
-
-                app.logger.info("👂 Mulai menunggu MQTT message...")
-                
-                for await message in mqttClient.messages {
-
-                    app.logger.info("🚨 MQTT MESSAGE MASUK!")
-                    app.logger.info("Topic: \(message.topic)")
-                    let topic = message.topic
+                    app.logger.info("👂 Mulai menunggu MQTT message...")
                     
-                    let data: Data
-                    switch message.payload {
-                    case .empty:
-                        data = Data()
-                    case .bytes(var buffer):
-                        data = buffer.readData(length: buffer.readableBytes) ?? Data()
-                    case .string(let string, _):
-                        data = Data(string.utf8)
+                    for await message in mqttClient.messages {
+                        app.logger.info("🚨 MQTT MESSAGE MASUK!")
+                        app.logger.info("Topic: \(message.topic)")
+                        let topic = message.topic
+                        
+                        let data: Data
+                        switch message.payload {
+                        case .empty:
+                            data = Data()
+                        case .bytes(var buffer):
+                            data = buffer.readData(length: buffer.readableBytes) ?? Data()
+                        case .string(let string, _):
+                            data = Data(string.utf8)
+                        }
+                        
+                        self.subscriber.handleIncomingMessage(topic: topic, payload: data)
                     }
                     
-                    self.subscriber.handleIncomingMessage(topic: topic, payload: data)
+                    app.logger.warning("⚠️ Loop MQTT messages terputus, mencoba auto-reconnect dalam 5 detik...")
+                    
+                } catch {
+                    app.logger.error("❌ Gagal koneksi/subscribe ke MQTT Broker: \(error). Reconnect dalam 5 detik...")
                 }
                 
-            } catch {
-                app.logger.error("❌ Gagal koneksi/subscribe ke MQTT Broker: \(error)")
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
             }
         }
     }
