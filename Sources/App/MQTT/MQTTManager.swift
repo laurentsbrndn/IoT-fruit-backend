@@ -16,8 +16,6 @@ final class MQTTManager {
     func start() throws {
         app.logger.notice("Mencoba terhubung ke MQTT Broker...")
         
-        let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        
         let configuration = MQTTConfiguration(
             target: .host("broker.hivemq.com", port: 1883),
             clientId: "VaporBackend_" + UUID().uuidString.prefix(6),
