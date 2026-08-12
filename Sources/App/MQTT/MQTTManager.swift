@@ -14,7 +14,7 @@ final class MQTTManager {
     }
     
     func start() throws {
-        app.logger.info("Mencoba terhubung ke MQTT Broker...")
+        app.logger.notice("Mencoba terhubung ke MQTT Broker...")
         
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         
