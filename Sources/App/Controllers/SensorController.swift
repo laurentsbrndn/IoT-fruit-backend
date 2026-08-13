@@ -2,11 +2,12 @@ import Vapor
 import Fluent
 
 struct SensorController: RouteCollection {
-    func boot(routes: RoutesBuilder) throws {
+func boot(routes: RoutesBuilder) throws {
         let sensorsRoute = routes.grouped("api", "sensors")
         
         sensorsRoute.get(use: getAllLogsHandler)
         sensorsRoute.get("device", ":deviceID", use: getDeviceLogsHandler) 
+        sensorsRoute.get("shipment", ":shipmentID", use: getShipmentLogsHandler)
     }
 
     func getAllLogsHandler(_ req: Request) async throws -> [SensorLog] {
