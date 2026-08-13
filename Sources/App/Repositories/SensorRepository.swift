@@ -30,8 +30,8 @@ struct SensorRepository {
             .limit(limit)
             .all()
     }
-    
-    func getLogs(for deviceId: String, limit: Int = 50) async throws -> [SensorLog] {
+
+    func getLogsByDevice(deviceId: String, limit: Int = 50) async throws -> [SensorLog] {
         guard let deviceUUID = UUID(uuidString: deviceId) else { return [] }
         
         return try await SensorLog.query(on: database)
@@ -42,6 +42,19 @@ struct SensorRepository {
             }
             .sort(\SensorLog.$timestamps, .descending)
             .limit(limit)
+            .all()
+    }
+    
+    // Fungsi untuk Shipment ID
+    func getLogsByShipment(shipmentId: String) async throws -> [SensorLog] {
+        guard let shipmentUUID = UUID(uuidString: shipmentId) else { return [] }
+        
+        return try await SensorLog.query(on: database)
+            .filter(\.$shipment.$id == shipmentUUID)
+            .with(\.$shipment) { shipment in
+                shipment.with(\.$device)
+            }
+            .sort(\.$timestamps, .ascending)
             .all()
     }
 }

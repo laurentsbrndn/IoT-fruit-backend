@@ -15,11 +15,14 @@ struct SensorController: RouteCollection {
     }
 
     func getDeviceLogsHandler(_ req: Request) async throws -> [SensorLog] {
-        guard let deviceID = req.parameters.get("deviceID") else {
-            throw Abort(.badRequest, reason: "Parameter Device ID tidak valid")
-        }
-        
+        guard let deviceID = req.parameters.get("deviceID") else { throw Abort(.badRequest) }
         let repository = SensorRepository(database: req.db)
-        return try await repository.getLogs(for: deviceID)
+        return try await repository.getLogsByDevice(deviceId: deviceID)
+    }
+    
+    func getShipmentLogsHandler(_ req: Request) async throws -> [SensorLog] {
+        guard let shipmentID = req.parameters.get("shipmentID") else { throw Abort(.badRequest) }
+        let repository = SensorRepository(database: req.db)
+        return try await repository.getLogsByShipment(shipmentId: shipmentID)
     }
 }
