@@ -19,7 +19,7 @@ final class MQTTManager {
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         
         let configuration = MQTTConfiguration(
-            target: .host("test.mosquitto.org", port: 1883),
+            target: .host("broker.hivemq.com", port: 1883),
             clientId: "VaporBackend_" + UUID().uuidString.prefix(6),
             keepAliveInterval: .seconds(60) 
         )
