@@ -41,11 +41,11 @@ struct ShipmentController: RouteCollection {
         return shipment
     }
 
-    func startShipmentHandler(_ req: Request) async throws -> HTTPStatus {
+    func startShipmentHandler(_ req: Request) async throws -> Shipment {
         let dto = try req.content.decode(StartShipmentDTO.self)
         
         guard let deviceUUID = UUID(uuidString: dto.deviceId),
-            let driverUUID = UUID(uuidString: dto.driverId) else {
+              let driverUUID = UUID(uuidString: dto.driverId) else {
             throw Abort(.badRequest, reason: "Format Device ID atau Driver ID tidak valid.")
         }
         
@@ -56,14 +56,14 @@ struct ShipmentController: RouteCollection {
             startDate: Date(),
             startLatitude: dto.startLatitude, 
             startLongitude: dto.startLongitude,
-            endLatitude: dto.endLatitude,      
-            endLongitude: dto.endLongitude     
+            endLatitude: dto.endLatitude,
+            endLongitude: dto.endLongitude
         )
         
         let repository = ShipmentRepository(database: req.db)
         try await repository.create(newShipment)
         
-        return .created
+        return newShipment
     }
 
     func finishShipmentHandler(_ req: Request) async throws -> HTTPStatus {
