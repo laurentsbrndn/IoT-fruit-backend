@@ -17,7 +17,8 @@ struct DriverController: RouteCollection {
             guard let id = driver.id?.uuidString else { return nil }
             return [
                 "driver_id": id,
-                "driver_name": driver.driverName
+                "driver_name": driver.driverName,
+                "driver_phone_number": driver.driverPhoneNumber
             ]
         }
     }
