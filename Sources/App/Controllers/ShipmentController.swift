@@ -45,7 +45,7 @@ struct ShipmentController: RouteCollection {
         let dto = try req.content.decode(StartShipmentDTO.self)
         
         guard let deviceUUID = UUID(uuidString: dto.deviceId),
-              let driverUUID = UUID(uuidString: dto.driverId) else {
+            let driverUUID = UUID(uuidString: dto.driverId) else {
             throw Abort(.badRequest, reason: "Format Device ID atau Driver ID tidak valid.")
         }
         
@@ -55,7 +55,9 @@ struct ShipmentController: RouteCollection {
             truckPlateNumber: dto.truckPlateNumber,
             startDate: Date(),
             startLatitude: dto.startLatitude, 
-            startLongitude: dto.startLongitude 
+            startLongitude: dto.startLongitude,
+            endLatitude: dto.endLatitude,      
+            endLongitude: dto.endLongitude     
         )
         
         let repository = ShipmentRepository(database: req.db)

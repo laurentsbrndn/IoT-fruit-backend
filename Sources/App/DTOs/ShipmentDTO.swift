@@ -6,6 +6,8 @@ struct StartShipmentDTO: Content {
     let truckPlateNumber: String
     let startLatitude: Double
     let startLongitude: Double
+    let endLatitude: Double?
+    let endLongitude: Double?
     
     enum CodingKeys: String, CodingKey {
         case deviceId = "device_id"
@@ -13,6 +15,8 @@ struct StartShipmentDTO: Content {
         case truckPlateNumber = "truck_plate_number"
         case startLatitude = "start_latitude"
         case startLongitude = "start_longitude"
+        case endLatitude = "end_latitude"
+        case endLongitude = "end_longitude"
     }
 }
 
