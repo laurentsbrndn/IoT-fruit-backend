@@ -62,6 +62,9 @@ struct ShipmentController: RouteCollection {
         
         let repository = ShipmentRepository(database: req.db)
         try await repository.create(newShipment)
+
+        try await newShipment.$device.load(on: req.db)
+        try await newShipment.$driver.load(on: req.db)
         
         return newShipment
     }
